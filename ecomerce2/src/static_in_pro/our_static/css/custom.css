@@ -1,0 +1,23 @@
+.text-align-center {
+	text-align: center;
+}
+
+.container-alert-flash{
+
+    position: absolute;
+    top: 10px;
+    z-index: 5000;
+    width: 100%;
+    right: 0%;
+    margin: 0px;
+    display: None;
+}
+
+.jumbotron {
+	background-color:white;
+	 color: black;
+
+}
+.fa {
+    color: black;
+}

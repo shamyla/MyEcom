@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+
+<script>
+{% block jquery %}
+
+    function setPrice()
+    {
+        var price = $(".variation_select option:selected").attr('data-price')
+
+        var sale_price = $(".variation_select option:selected").attr('data-sale-price')
+
+        if (sale_price!="" && sale_price!="None" && sale_price!= null){
+            $("#price").html("<h3>"+ sale_price+
+                    "<small style='color:red;text-decoration:line-through;'>Original price:"+ price +
+                    "</small></h3>");
+        } else{
+        $("#price").html(price);
+        }
+    }
+    setPrice()
+
+
+    $(".variation_select").change(function(){
+        setPrice()
+        })
+
+
+$("#submit-btn").click(function(event){
+    event.preventDefault();
+    var formData = $("#add-form").serialize();
+    console.log(formData);
+
+    $.ajax({
+        type: "GET",
+        url: "{% url 'cart' %}",
+        data: formData,
+
+        success: function(data){
+            console.log(data);
+            showflashmessage(data.flash_message);
+            updateCartItemCount()
+        },
+
+
+        error: function(response, error){
+//            console.log(response)
+//            console.log(error)
+              $("#add-form").submit()
+
+        }
+    })
+})
+{% endblock %}
+
+</script>
+<style>
+
+    {% block style %}
+.container-alert-flash{
+
+    position: absolute;
+    top: 10px;
+    z-index: 5000;
+    width: 100%;
+    right: 0%;
+    margin: 0px;
+}
+
+
+
+    {% endblock %}
+
+
+</style>
+
+
+{% block content %}
+
+ <!--Alert copied to alrt.html-->
+
+
+     <div class="row">
+        <div class="container">
+        <div class="col-sm-8 pull-left">
+
+
+
+    <h1>Title:{{ products.title }}</h1><br>
+            Description:
+    <!--<img src="{{ products.Image.url }}"></a></br></hr>-->
+    {{ products.description }}</br></hr>
+    <h3>Price: {{ products.price }}</h3><hr>
+
+
+        {% if object.productimage_set.count > 0 %}
+        <div>
+
+
+            {% for img in object.productimage_set.all %}
+
+            <img class="img-responsive" src='{{ img.Image.url }}' />
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="col-sm-4 pull-right">
+
+        </hr>
+        <!-- for variation default setting !-->
+        <form id="add-form" method="GET" action="{% url 'cart' %}">
+            <p id="jquery-message" class='lead'>
+
+            </p>
+
+        {% if object.variation_set.count > 1 %}
+
+                <h3 id="price">{{ object.variation_set.first.price }}</h3>
+
+
+                <select name='item' class="form-control variation_select">
+
+                {% for vari_obj in object.variation_set.all %}
+
+                <option data-sale-price="{{ vari_obj.sale_price }}" data-price="{{ vari_obj.price }}"
+                        value ="{{ vari_obj.id }}">{{ vari_obj }}</option>
+                {% endfor %}
+
+                </select>
+
+        {% else %}
+
+                <input type="hidden" name="item" value='{{ object.variation_set.first.id }}'/>
+
+                <h3 id="price">
+                  {% if object.variation_set.first.sale_price %}
+                  {{ object.variation_set.first.sale_price }}
+
+                    <small class="og-price">
+                    {{ object.variation_set.first.price }}
+                    </small>
+
+                    {% else %}
+
+                    {{ object.variation_set.first.price }}
+
+                  {% endif %}
+
+                </h3>
+
+        {% endif %}
+
+            <br/>
+            <input class="form-control"type="number"name="qty" value="1"/>
+            <input id="submit-btn" type="submit" value=" Add to Cart" class="btn btn-default" ></a><br><br>
+            </form>
+
+
+
+            <h3>Related Products</h3></br>
+
+        {% for products in related %}
+
+        <a href='{{ products.get_absolute_url }}'>{{ products.title }}</a>
+
+        {% endfor %}
+
+    </div>
+    </div>
+</div>
+
+{% endblock %}

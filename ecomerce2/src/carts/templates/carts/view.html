@@ -1,0 +1,129 @@
+{% extends 'base.html'%}
+
+<script>
+
+    {% block jquery %}
+
+    $(".item-qty").change(function(){
+
+       // $(this).next(".btn-update").fadeIn();
+        var item = $(this).prev("input[type='hidden']").val();
+        var qty = $(this).val()
+        var data = {
+            item: item,
+            qty: qty
+        }
+    console.log(data);
+
+    $.ajax({
+
+        type: "GET",
+        url: "{% url 'cart' %}",
+        data: data,
+
+        success: function(data){
+                    // console.log(data)
+            $("#jquery-message").text("deleted"+ data.deleted + "added"+ data.item_added);
+
+
+        if(data.deleted){
+
+            $("#item-"+item).fadeOut();
+            $("#subtotal").text(data.subtotal);
+            $("#taxtotal").text(data.tax_total);
+            $("#carttotal").text(data.total);
+
+
+        } else {
+            $("#line-item-total-"+item).text(data.line_total);
+            $("#subtotal").text(data.subtotal);
+            $("#taxtotal").text(data.tax_total);
+            $("#carttotal").text(data.total);
+
+        }
+        if(data.total == 0){
+            $(".table").fadeOut();
+            $(".main-content").text("your cart is empty");
+
+        }
+
+
+        var message = ""
+        if (data.item_added){
+            message = "Data added"
+
+        } else if (data.deleted){
+            message = "Data deleted"
+        } else{
+            message = "updated"
+        }
+        showflashmessage(message);
+        updateCartItemCount()
+        },
+
+        error: function(response, error){
+            $("#add-form").submit()
+
+        }
+    })
+});
+
+
+{% endblock %}
+
+
+</script>
+
+{% block content %}
+<div class=" row main-content">
+
+{% if object.cartitem_set.count < 1 %}
+<!--<h1>Your cart is empty</h1>-->
+
+{% else %}
+
+<table class="table">
+
+{% for  item in object.cartitem_set.all %}
+        <tr id="item-{{ item.item.id }}">
+            <td>
+                <form action="." method="get">{{ item.get_title }}
+
+                <input type="hidden" name="item" value="{{ item.item.id }}"/>
+                <input type="number" class="item-qty" name="qty" value="{{ item.quantity }}"/>
+                <input type="submit" class="btn btn-update btn btn-link" value="update item" style="display:none"/>
+                </form>
+            </td>
+
+            <td id="line-item-total-{{ item.item.id }}">
+                {{ item.line_item_total }}
+
+            </td>
+
+            <td>
+            <!--remove code-->
+            </td>
+
+
+        </tr>
+
+{% endfor %}
+    <tr>
+<td colspan="4" class="text-right">Subtotal:<span  id='subtotal'>{{ object.subtotal }}</span></td>
+</tr>
+     <tr>
+<td colspan="4" class="text-right">Tax(Estiamted):<span id='taxtotal'>{{ object.tax_total }}</span></td>
+</tr>
+     <tr>
+<td  colspan="4" class="text-right">Total:<span id='carttotal'>{{ object.total }}</span></td>
+</tr>
+</table>
+
+
+
+
+
+
+{% endif %}
+    </div>
+{% endblock %}

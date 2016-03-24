@@ -1,0 +1,13 @@
+{%  extends 'base.html' %}
+
+{% block content %}
+<!--object_list is modelname_list-->
+{% for object in  object_list %}
+
+<table class="table"><tr><td>
+<a href='/products/{{ object.pk }}/'>{{ object.title }}</a>
+<!--<a href='{{ object.get_absolute_url }}'>{{ object.title }}</a>-->
+</td></tr></table>
+        {% endfor %}
+
+{% endblock %}
